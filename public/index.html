@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebRTC</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <h1>WebRTC - 实时连线</h1>
+
+    <div>
+      <span>请输入房间号</span>
+      <input type="text" value="111111" id="room">
+      <button id="btnJoin">加入</button>
+      <button id="btnLeave">离开</button>
+    </div>
+    <br />
+    <div class="flex">
+      <div class="flex-item">
+        <video id="localVideo" autoplay playsinline muted></video>
+      </div>
+      <div class="flex-item">
+        <video id="remoteVideo" autoplay playsinline></video>
+      </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/webrtc-adapter/7.4.0/adapter.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
