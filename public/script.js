@@ -6,8 +6,15 @@ var localStream = null;
 var socket = null;
 var state = 'init';
 var pc = null;
+var dc = null;
 var room = '111111';
+var chat = document.querySelector('#chat');
+var send = document.querySelector('#send');
+var send_txt = document.querySelector('#send_txt');
 
+send.onclick = function () {
+  sendText();
+};
 function sendSignal(roomid, data) {
   if (socket) {
     socket.emit('signal', roomid, data);
@@ -28,6 +35,8 @@ function closeLocalMedia() {
       track.stop();
     });
   }
+  remoteVideo.srcObject = null;
+  localVideo.srcObject = null;
   localStream = null;
 }
 
@@ -72,9 +81,40 @@ function call() {
   }
 }
 
+function recevemsg(e) {
+  var msg = e.data;
+  console.log('receives ', msg);
+  if (msg) {
+    chat.value += '--->' + msg + '\r\n';
+  } else {
+    console.error('receives msg is null');
+  }
+}
+
+function sendText() {
+  var data = send_txt.value;
+  console.log('send', data);
+  if (data) {
+    dc.send(data);
+    send_txt.value = '';
+    chat.value += '<- ' + data + '\r\n';
+  }
+}
+
+function dataChannelStateChange(e) {
+  var readyState = dc.readyState;
+  if (readyState === 'open') {
+    send_txt.disabled = false;
+    send.disabled = false;
+  } else if (readyState == 'close') {
+    send_txt.disabled = true;
+    send.disabled = true;
+  }
+}
+
 // 创建 Peer 连接
 function createPeerConnection() {
-  console.log('create RTCPeerConnection');
+  console.log('create RTCPeerConnection', pc);
   if (!pc) {
     var config = {
       iceServers: [
@@ -104,6 +144,16 @@ function createPeerConnection() {
       remoteVideo.srcObject = e.streams[0];
       // remoteVideo.srcObject = new MediaStream([e.track]);
     };
+    pc.ondatachannel = (e) => {
+      console.log(e);
+      console.log('dadadada', dc);
+      if (!dc) {
+        dc = e.channel;
+        dc.onmessage = recevemsg;
+        dc.onopen = dataChannelStateChange;
+        dc.onclose = dataChannelStateChange;
+      }
+    };
 
     // 将本地流加入 RTCPeerConnection
     if (localStream) {
@@ -111,6 +161,8 @@ function createPeerConnection() {
         pc.addTrack(track, localStream);
       }
     }
+  } else {
+    console.log('the pc has created');
   }
 }
 
@@ -132,15 +184,20 @@ function conn() {
     }
     state = 'joined_conn';
 
+    dc = pc.createDataChannel('chat', {});
+    dc.onmessage = recevemsg;
+    dc.onopen = dataChannelStateChange;
+    dc.onclose = dataChannelStateChange;
     call();
 
-    console.log('otherjoined message state: ', state);
+    console.log('otherjoined message state: ', state, dc);
   });
 
   socket.on('full', (roomid, socketid) => {
     console.log('full message : ', roomid, socketid);
     state = 'leaved';
     socket.disconnect();
+    closeLocalMedia();
     alert('该房间已满');
   });
 
@@ -159,13 +216,10 @@ function conn() {
 
   // 收到媒体协商信令消息
   socket.on('signal', (roomid, data) => {
-    console.log('message message : ', roomid, data);
+    // console.log('message message : ', roomid, data);
 
     // 媒体协商信息
     if (data) {
-      console.log('message data: ', data);
-      console.log(data.type);
-
       if (data.type === 'offer') {
         // 被呼叫方
         pc.setRemoteDescription(new RTCSessionDescription(data));
