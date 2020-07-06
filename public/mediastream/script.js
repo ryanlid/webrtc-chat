@@ -7,7 +7,7 @@ var socket = null;
 var state = 'init';
 var pc = null;
 var dc = null;
-var room = '111111';
+var room = '';
 var chat = document.querySelector('#chat');
 var send = document.querySelector('#send');
 var send_txt = document.querySelector('#send_txt');
@@ -23,10 +23,15 @@ function sendSignal(roomid, data) {
 
 // 关闭 peer 连接
 function closePeerConnection() {
+  if (dc) {
+    dc.close();
+    dc = null;
+  }
   if (pc) {
     pc.close();
     pc = null;
   }
+  socket.disconnect();
 }
 // 关闭本地媒体
 function closeLocalMedia() {
@@ -49,6 +54,7 @@ function leave() {
   closePeerConnection();
   // 关闭本地音视频资源
   closeLocalMedia();
+  socket.disconnect();
 }
 
 function getAnswer(desc) {
@@ -207,13 +213,6 @@ function conn() {
     socket.disconnect();
   });
 
-  socket.on('bye', (roomid, socketid) => {
-    console.log('bye message : ', roomid, socketid);
-    state = 'joined_unbind';
-    // 关闭p2p连接
-    // closePeerConnection();
-  });
-
   // 收到媒体协商信令消息
   socket.on('signal', (roomid, data) => {
     // console.log('message message : ', roomid, data);
@@ -246,7 +245,6 @@ function conn() {
 function getMediaStream(stream) {
   localVideo.srcObject = stream;
   localStream = stream;
-  conn();
 }
 
 function join() {
@@ -271,7 +269,12 @@ function join() {
       .then(getMediaStream)
       .catch((err) => {
         console.log(err);
+        if (err.name === 'NotFoundError') {
+          alert('未找到媒体设备');
+        }
       });
+    // 连接信令服务器
+    conn();
   }
 }
 
