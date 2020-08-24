@@ -267,14 +267,17 @@ function join() {
     navigator.mediaDevices
       .getUserMedia(constraints)
       .then(getMediaStream)
+      .then(
+        // 连接信令服务器
+         function(){
+          conn();
+         })
       .catch((err) => {
         console.log(err);
         if (err.name === 'NotFoundError') {
           alert('未找到媒体设备');
         }
-      });
-    // 连接信令服务器
-    conn();
+      })
   }
 }
 

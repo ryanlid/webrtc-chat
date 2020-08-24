@@ -1,6 +1,5 @@
 var btnJoin = document.querySelector('#btnJoin');
 var btnLeave = document.querySelector('#btnLeave');
-var localStream = null;
 var socket = null;
 var state = 'init';
 var pc = null;
