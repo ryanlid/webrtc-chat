@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>多人通信</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <h1 class="text-center">WebRTC - 多人实时连线</h1>
+    <div class="text-center">
+      <span>请输入房间号</span>
+      <input type="text" value="111111" id="room" />
+      <button id="btnJoin" class="btn">加入</button>
+      <button id="btnLeave" class="btn">离开</button>
+    </div>
+    <br />
+    <div class="flex">
+      <div class="flex-item">
+        <video id="localVideo" autoplay playsinline muted></video>
+      </div>
+      <div class="flex-item">
+        <video id="remoteVideo" autoplay playsinline></video>
+      </div>
+    </div>
+    <div class="flex">
+      <div class="flex-item">
+        <textarea
+          id="chat"
+          rows="10"
+          readonly
+          placeholder="消息记录为空"
+        ></textarea>
+      </div>
+      <div class="flex-item">
+        <textarea
+          id="send_txt"
+          rows="10"
+          placeholder="请输入要发送的内容"
+        ></textarea>
+      </div>
+    </div>
+    <div class="flex">
+      <div class="flex-1 text-center">
+        <button id="send" class="btn">发送</button>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/webrtc-adapter@7.6.0/out/adapter.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
